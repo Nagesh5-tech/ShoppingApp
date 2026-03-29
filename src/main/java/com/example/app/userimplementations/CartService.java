@@ -38,41 +38,34 @@ public class CartService implements CartServiceContract{
 
 
 
+	    public void addToCart(User user, int productId, int quantity) {
+	    	Product product = productRepository.findById(productId)
+	    	.orElseThrow(()-> new IllegalArgumentException("Product not found with ID:" + productId));
+	    	int userId;
+	    	// Fetch cart item for this userId and productId
+	    	Optional<CartItem> existingItem = cartRepository.findByUserAndProduct(user.getUserId(), productId);
+	    	if (existingItem.isPresent()) {
+	    		CartItem cartItem = existingItem.get();
+	    	cartItem.setQuantity(cartItem.getQuantity() + quantity);
+	    	cartRepository.save(cartItem);
+	    	} else {
+	    		CartItem newItem = new CartItem(user, product, quantity);
+	    	cartRepository.save(newItem);
+	    	}
+
+	    	}
+	
+	
 	@Override
-			public void addToCart(int userId, int productId, int quantity) {
-				// TODO Auto-generated method stub
-				User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
-
-						Product product = productRepository.findById(productId)
-						.orElseThrow(() -> new IllegalArgumentException("Product not found with ID: " + productId));
-
-						// Fetch cart item for this userld and productld
-						Optional<CartItem> existingItem = cartRepository.findByUserAndProduct(userId, productId);
-
-						if (existingItem.isPresent()) {
-						CartItem cartitem = existingItem.get();
-						cartitem.setQuantity(cartitem.getQuantity() + quantity);
-						cartRepository.save(cartitem);
-						} else {
-						CartItem newItem = new CartItem(user, product, quantity);
-						cartRepository.save(newItem);
-						}
-				
-			}
-	
-	
 	// Get Cart Items for a User
-	public Map<String, Object> getCartItems(int userId) {
-	// Fetch the cart items for the user with product details
-	List<CartItem> cartItems = cartRepository.findCartitemsWithProductDetails(userId);
-
+	public Map<String, Object> getCartItems(User authenticatedUser) {
+		// Fetch the cart items for the user with product details
+	List<CartItem> cartItems = cartRepository.findCartitemsWithProductDetails(authenticatedUser.getUserId());
 	// Create a response map to hold the cart details
 	Map<String, Object> response = new HashMap<>();
-	User user = userRepository.findById(userId)
-	.orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-	response.put("username", user.getUsername());
-	response.put("role", user.getRole().toString());
+	response.put("username", authenticatedUser.getUsername());
+	response.put("role", authenticatedUser.getRole().toString());
 
 	// List to hold the product details
 	List<Map<String, Object>> products = new ArrayList<>();
@@ -117,30 +110,33 @@ public class CartService implements CartServiceContract{
 	
 	
 	
-	public void updateCartItemQuantity(int userId, int productId, int quantity) {
-		User user = userRepository.findById(userId)
-		.orElseThrow(() -> new IllegalArgumentException("User not found"));
+	@Override
+	public void updateCartItemQuantity(User authenticateduser, int productId, int quantity) {
+	// TODO Auto-generated method stub
+		User user=userRepository.findById(authenticateduser.getUserId()).orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-		Product product = productRepository.findById(productId)
-		.orElseThrow(() -> new IllegalArgumentException("Product not found"));
+		Product product = productRepository.findById(productId).orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
 		// Fetch cart item for this userld and productld
-		Optional<CartItem> existingItem = cartRepository.findByUserAndProduct(userId, productId);
+		Optional<CartItem> existingItem = cartRepository.findByUserAndProduct(authenticateduser.getUserId(), productId);
 
 		if (existingItem.isPresent()) {
 		CartItem cartItem = existingItem.get();
 		if (quantity == 0) {
-		deleteCartItem(userId, productId);
+		deleteCartItem(authenticateduser.getUserId(), productId);
 		} else {
 		cartItem.setQuantity(quantity);
 		cartRepository.save(cartItem);
 		}
 		}
+		else
+		{
+			throw new RuntimeException("Cart Item not found associated with product and user");
+		}
+		
 	}
 	
 	public void deleteCartItem(int userId, int productId) {
-		User user = userRepository.findById(userId)
-		.orElseThrow(() -> new IllegalArgumentException("User not found"));
 
 		Product product = productRepository.findById(productId)
 		.orElseThrow(() -> new IllegalArgumentException("Product not found"));
