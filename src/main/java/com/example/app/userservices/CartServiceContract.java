@@ -10,4 +10,5 @@ public interface CartServiceContract {
 	 public Map<String, Object> getCartItems(User authenticatedUser);
 	 public void updateCartItemQuantity(User authenticateduser, int productId, int quantity);
 	 public void deleteCartItem(int userId, int productId);
+	 int getCartItemCount(int userId);
 }

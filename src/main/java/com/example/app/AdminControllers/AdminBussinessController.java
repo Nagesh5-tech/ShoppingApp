@@ -1,0 +1,97 @@
+package com.example.app.AdminControllers;
+
+
+
+import java.time.LocalDate;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.app.AdminServices.AdminBussinessServiceContract;
+
+@RestController
+@RequestMapping("/admin/business")
+public class AdminBussinessController {
+	
+	private final AdminBussinessServiceContract adminBusinessService;
+
+	public AdminBussinessController(AdminBussinessServiceContract adminBusinessService) {
+		super();
+		this.adminBusinessService = adminBusinessService;
+	}
+	
+    @GetMapping("/monthly")
+    public ResponseEntity<?> getMonthlyBusiness(@RequestParam int month, @RequestParam int year) {
+        try {
+            Map<String, Object> businessReport =
+                    adminBusinessService.calculateMonthlyBusiness(month, year);
+
+            return ResponseEntity.ok(businessReport);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Something went wrong");
+        }
+    }
+
+    @GetMapping("/daily")
+    public ResponseEntity<?> getDailyBusiness(@RequestParam String date) {
+        try {
+            LocalDate localDate = LocalDate.parse(date);
+
+            Map<String, Object> businessReport =
+                    adminBusinessService.calculateDailyBusiness(localDate);
+
+            return ResponseEntity.ok(businessReport);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body("Invalid date format. Use YYYY-MM-DD");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Something went wrong");
+        }
+    }
+
+    @GetMapping("/yearly")
+    public ResponseEntity<?> getYearlyBusiness(@RequestParam int year) {
+        try {
+            Map<String, Object> businessReport =
+                    adminBusinessService.calculateYearlyBusiness(year);
+
+            return ResponseEntity.ok(businessReport);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Something went wrong");
+        }
+    }
+    
+    @GetMapping("/overall")
+    public ResponseEntity<?> getOverallBusiness() {
+        try {
+            Map<String, Object> overallBusiness =
+                    adminBusinessService.calculateOverallBusiness();
+
+            return ResponseEntity.ok(overallBusiness);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Something went wrong while calculating overall business");
+        }
+    }
+	
+	
+
+}

@@ -136,4 +136,17 @@ return Jwts.parserBuilder()
 
 }
 
+public void logout(User user) {
+
+    int userId = user.getUserId();
+
+    // Retrieve the JWT token associated with the user
+    JWTToken token = jwtTokenRepository.findByUserId(userId);
+
+    // If token exists, delete it
+    if (token != null) {
+        jwtTokenRepository.deleteByUserId(userId);
+    }
+}
+
 }

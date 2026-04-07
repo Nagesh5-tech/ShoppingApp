@@ -143,6 +143,14 @@ public class CartService implements CartServiceContract{
 
 		cartRepository.deleteCartItem(userId, productId);
 	}
+
+
+
+	@Override
+	public int getCartItemCount(int userId) {
+		int count=cartRepository.countTotalItems(userId);
+		return count;
+	}
 	
 	
 }

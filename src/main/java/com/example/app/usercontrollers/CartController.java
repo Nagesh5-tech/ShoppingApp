@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.app.DTOs.CartRequest;
@@ -113,6 +114,19 @@ public class CartController {
 	// Delete the cart item
 	cartService.deleteCartItem(user.getUserId(),productId);
 	return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+	}
+	
+	// Fetch userId from username coming from the filter and get cart item count
+	@GetMapping("/items/count")
+	public ResponseEntity<Integer> getCartItenCount(@RequestParam String username,HttpServletRequest req) {
+	
+		// Fetch the Authenticated user using user
+		 User user = (User) req.getAttribute("authenticatedUser");
+		
+
+	// Call the service to get the total cart item count
+	int count = cartService.getCartItemCount(user.getUserId());
+	return ResponseEntity. ok(count);
 	}
 	
 	

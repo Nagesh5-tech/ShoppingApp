@@ -9,4 +9,5 @@ public interface AuthServiceContract {
 	public void saveToken(User user,String token);
 	public boolean validateToken(String token);
 	public String extractUsername(String token);
+	public void logout(User user);
 }

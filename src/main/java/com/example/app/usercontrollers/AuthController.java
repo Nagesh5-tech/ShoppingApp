@@ -57,4 +57,40 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", e.getMessage()));
         }
     }
+    
+    @PostMapping("/logout")
+    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request,
+                                                      HttpServletResponse response) {
+        try {
+            // Retrieve authenticated user
+            User user = (User) request.getAttribute("authenticatedUser");
+
+            // Handle unauthenticated case
+            if (user == null) {
+                return ResponseEntity
+                        .status(401)
+                        .body(Map.of("message", "User not authenticated"));
+            }
+
+            // Perform logout
+            authService.logout(user);
+
+            // Clear auth cookie
+            Cookie cookie = new Cookie("authToken", null);
+            cookie.setHttpOnly(true);
+            cookie.setSecure(false); // ⚠ set true in production (HTTPS)
+            cookie.setPath("/");
+            cookie.setMaxAge(0);
+            response.addCookie(cookie);
+
+            // Success response
+            return ResponseEntity.ok(Map.of("message", "Logout successful"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(500)
+                    .body(Map.of("message", "Logout failed"));
+        }
+    }
 }
